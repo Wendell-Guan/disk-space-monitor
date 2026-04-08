@@ -11,7 +11,23 @@ from datetime import datetime
 
 class DiskSpaceMonitorApp(rumps.App):
     def __init__(self):
-        super(DiskSpaceMonitorApp, self).__init__("💾", quit_button=None)
+        # Get icon path
+        icon_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "hard_drive_icon.png"
+        )
+
+        # Use icon file if exists, otherwise use emoji
+        if os.path.exists(icon_path):
+            super(DiskSpaceMonitorApp, self).__init__(
+                "HDD",
+                icon=icon_path,
+                template=True,
+                quit_button=None
+            )
+        else:
+            super(DiskSpaceMonitorApp, self).__init__("💾", quit_button=None)
+
         self.log_dir = os.path.expanduser("~/.disk_monitor_logs")
         self.update_menu()
         
@@ -36,9 +52,12 @@ class DiskSpaceMonitorApp(rumps.App):
     def update_menu(self):
         """Update menu items"""
         used, avail, percent = self.get_disk_info()
-        
-        # Update title (menu bar display)
-        self.title = f"💾 {avail}"
+
+        # Update title (menu bar display) - only show available space if using icon
+        if hasattr(self, 'icon') and self.icon:
+            self.title = f"{avail}"
+        else:
+            self.title = f"💾 {avail}"
         
         # Clear existing menu
         self.menu.clear()

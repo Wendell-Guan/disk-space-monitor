@@ -11,7 +11,23 @@ from datetime import datetime
 
 class DiskSpaceMonitorApp(rumps.App):
     def __init__(self):
-        super(DiskSpaceMonitorApp, self).__init__("💾", quit_button=None)
+        # 获取图标路径
+        icon_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "hard_drive_icon.png"
+        )
+
+        # 如果图标存在则使用，否则使用emoji
+        if os.path.exists(icon_path):
+            super(DiskSpaceMonitorApp, self).__init__(
+                "HDD",
+                icon=icon_path,
+                template=True,
+                quit_button=None
+            )
+        else:
+            super(DiskSpaceMonitorApp, self).__init__("💾", quit_button=None)
+
         self.log_dir = os.path.expanduser("~/.disk_monitor_logs")
         self.update_menu()
         
@@ -36,9 +52,12 @@ class DiskSpaceMonitorApp(rumps.App):
     def update_menu(self):
         """更新菜单"""
         used, avail, percent = self.get_disk_info()
-        
-        # 更新标题（状态栏显示）
-        self.title = f"💾 {avail}"
+
+        # 更新标题（状态栏显示）- 使用图标时只显示可用空间
+        if hasattr(self, 'icon') and self.icon:
+            self.title = f"{avail}"
+        else:
+            self.title = f"💾 {avail}"
         
         # 清空现有菜单
         self.menu.clear()
