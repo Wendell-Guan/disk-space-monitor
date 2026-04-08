@@ -1,0 +1,13 @@
+# 日志文件
+*.log
+.disk_monitor_logs/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 临时文件
+*.tmp
+*.swp
+*~
