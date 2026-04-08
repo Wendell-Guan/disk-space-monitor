@@ -1,170 +1,270 @@
 # Disk Space Monitor 💾
 
-macOS 磁盘空间监控工具 - 追踪和分析磁盘空间快速消耗的原因
+A macOS disk space monitoring tool that tracks and analyzes what's consuming your disk space.
 
-## 功能特性
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![macOS](https://img.shields.io/badge/macOS-10.13+-blue.svg)](https://www.apple.com/macos/)
+[![Python](https://img.shields.io/badge/Python-3.7+-green.svg)](https://www.python.org/)
 
-- 🔍 **持续监控**：自动记录磁盘空间变化
-- 📊 **进程追踪**：记录占用资源最多的进程
-- 📦 **大文件检测**：定期扫描并记录大文件
-- 🚀 **实时监控**：实时查看文件写入活动
-- 📈 **分析报告**：生成可读性强的分析报告
+[English](README.md) | [中文](README_zh.md)
 
-## 快速开始
+## Features
 
-### 1. 启动监控（后台运行）
+- 🔍 **Continuous Monitoring** - Automatically track disk space changes
+- 📊 **Process Tracking** - Record processes consuming the most resources
+- 📦 **Large File Detection** - Periodically scan and log large files
+- 🚀 **Real-time Monitoring** - View file write activity in real-time
+- 📈 **Analysis Reports** - Generate readable analysis reports
+- 💻 **Menu Bar App** - Real-time disk usage display in status bar
+
+## Quick Start
+
+### Installation
 
 ```bash
-./monitor.sh &
+cd ~/disk-space-monitor
+./install_gui.sh
 ```
 
-监控日志将保存在 `~/.disk_monitor_logs/`
+### Launch Monitoring
 
-### 2. 查看分析报告
-
+**Option 1: Command Line (Background)**
 ```bash
-./analyze.sh
+./emergency_monitor.sh &
 ```
 
-### 3. 实时监控文件写入
-
+**Option 2: GUI Menu Bar App**
 ```bash
-sudo ./realtime.sh
+./launch_gui.sh
 ```
 
-### 4. 停止监控
+You'll see a 💾 icon in the menu bar showing available space.
+
+## Components
+
+### 📱 Menu Bar App (Recommended)
+
+Click the 💾 icon to:
+- View used/available space
+- Check monitor status
+- Access logs quickly
+- Quick cleanup tools
+- Auto-refresh every 30 seconds
+
+### 🖥️ Command Line Tools
+
+| Script | Function | Update Frequency |
+|--------|----------|------------------|
+| `monitor.sh` | Regular monitoring | Every 30s |
+| `emergency_monitor.sh` | Alert when >100MB lost | Every 5s |
+| `analyze.sh` | Generate analysis report | On-demand |
+| `snapshot.sh` | Create space snapshot | On-demand |
+| `check_culprits.sh` | Quick diagnostics | On-demand |
+
+## Usage
+
+### Monitor Space Changes
 
 ```bash
-pkill -f monitor.sh
+# View real-time emergency log
+tail -f ~/.disk_monitor_logs/emergency.log
+
+# Create snapshot for comparison
+~/disk-space-monitor/snapshot.sh
+
+# Run diagnostics
+~/disk-space-monitor/check_culprits.sh
+
+# Generate analysis report
+~/disk-space-monitor/analyze.sh
 ```
 
-## 配置
+### Menu Bar App
 
-可以通过环境变量自定义配置：
+After launching:
+1. Check the 💾 icon in menu bar (shows available space)
+2. Click to view detailed menu
+3. Access logs, create snapshots, or use quick cleanup tools
+
+## Log Files
+
+All logs are stored in `~/.disk_monitor_logs/`:
+
+- `disk_space.log` - Disk space change history
+- `disk_writers.log` - Process resource usage
+- `large_files.log` - Large file scan results
+- `emergency.log` - Emergency events (sudden space loss)
+- `snapshots/` - Snapshot comparison data
+
+## Use Cases
+
+### Scenario 1: Disk Space Disappearing Fast
+
+1. Start monitoring: `./emergency_monitor.sh &`
+2. Wait (hours or overnight)
+3. Check analysis: `./analyze.sh`
+4. Compare start/end space usage
+
+### Scenario 2: Find Space-Consuming Programs
+
+1. Run real-time monitor: `sudo ./realtime.sh`
+2. Watch output for frequent processes
+3. Press Ctrl+C to stop
+
+### Scenario 3: Regular Health Checks
+
+Add to crontab for periodic checks:
 
 ```bash
-# 自定义日志目录
+# Check every hour
+0 * * * * ~/disk-space-monitor/monitor.sh
+```
+
+## Manual Investigation
+
+```bash
+# Real-time space changes
+tail -f ~/.disk_monitor_logs/emergency.log
+
+# Full history
+cat ~/.disk_monitor_logs/disk_space.log
+
+# Process records
+tail -20 ~/.disk_monitor_logs/disk_writers.log
+
+# Large files
+cat ~/.disk_monitor_logs/large_files.log
+
+# Current disk status
+df -h /
+
+# Interactive directory scan (requires ncdu)
+ncdu ~/
+```
+
+## Auto-start on Login
+
+### Method 1: LaunchAgent
+
+```bash
+cat > ~/Library/LaunchAgents/com.diskmonitor.statusbar.plist << 'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.diskmonitor.statusbar</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/Users/YOUR_USERNAME/disk-space-monitor/statusbar_app.py</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+</dict>
+</plist>
+PLIST
+
+# Load
+launchctl load ~/Library/LaunchAgents/com.diskmonitor.statusbar.plist
+```
+
+Replace `/Users/YOUR_USERNAME/` with your actual path!
+
+### Method 2: System Settings
+
+1. Open System Settings
+2. General → Login Items
+3. Click + to add
+4. Select `~/disk-space-monitor/statusbar_app.py`
+
+## Requirements
+
+- macOS 10.13+
+- Python 3.7+
+- Bash
+- sudo privileges (for real-time monitoring)
+
+## Optional Dependencies
+
+```bash
+# Interactive disk usage analyzer
+brew install ncdu
+
+# Modern disk usage analyzer
+brew install dust
+```
+
+## Configuration
+
+Customize via environment variables:
+
+```bash
+# Custom log directory
 export LOG_DIR="/path/to/logs"
 
-# 自定义监控间隔（秒）
+# Custom monitoring interval (seconds)
 export INTERVAL=60
 
-# 自定义大文件阈值
+# Custom large file threshold
 export LARGE_FILE_SIZE=500M
 
 ./monitor.sh &
 ```
 
-## 日志文件
+## Troubleshooting
 
-监控系统会生成以下日志文件：
-
-- `disk_space.log` - 磁盘空间变化记录（每30秒）
-- `disk_writers.log` - 进程资源占用记录
-- `large_files.log` - 大文件扫描结果（每5分钟）
-
-## 使用场景
-
-### 场景1：磁盘空间快速消失
-
-1. 启动监控：`./monitor.sh &`
-2. 等待一段时间（几小时或过夜）
-3. 查看分析报告：`./analyze.sh`
-4. 对比开始和结束的空间使用情况
-
-### 场景2：找出占用空间的程序
-
-1. 运行实时监控：`sudo ./realtime.sh`
-2. 观察输出，频繁出现的进程名即为可疑对象
-3. 按 Ctrl+C 停止
-
-### 场景3：定期检查磁盘健康
-
-在 crontab 中添加定期检查：
+### Menu Bar App Won't Start
 
 ```bash
-# 每小时记录一次
-0 * * * * ~/disk-space-monitor/monitor.sh
+# Check dependencies
+python3 -c "import rumps"
+
+# If error, reinstall
+pip3 install rumps pyobjc
 ```
 
-## 手动调查命令
+### No Icon in Menu Bar
 
-```bash
-# 查看实时空间变化
-tail -f ~/.disk_monitor_logs/disk_space.log
+- Check if running: `ps aux | grep statusbar_app`
+- Restart: `pkill -f statusbar_app && python3 ~/disk-space-monitor/statusbar_app.py &`
 
-# 查看完整历史
-cat ~/.disk_monitor_logs/disk_space.log
+### Monitor Shows Stopped
 
-# 查看进程记录
-tail -20 ~/.disk_monitor_logs/disk_writers.log
+- Start monitoring: `~/disk-space-monitor/emergency_monitor.sh &`
 
-# 查看大文件
-cat ~/.disk_monitor_logs/large_files.log
+## Common Space Culprits
 
-# 检查当前磁盘状态
-df -h /
+Based on analysis, common space consumers:
 
-# 交互式目录扫描（需要先安装 ncdu）
-ncdu ~/
-```
+1. **Xcode Simulators** (~34GB) - `xcrun simctl delete unavailable`
+2. **WeChat Cache** (~48GB) - Clean in WeChat settings
+3. **Downloads** (~187GB) - Review and delete old files
+4. **Homebrew Cache** - `brew cleanup`
+5. **Docker** - `docker system prune -a`
 
-## 系统要求
+## Contributing
 
-- macOS
-- Bash
-- sudo 权限（用于实时监控）
+Contributions welcome! Please feel free to submit a Pull Request.
 
-## 可选工具
+## Author
 
-安装以下工具以增强功能：
+Wendell-Guan
 
-```bash
-# 交互式磁盘使用分析工具
-brew install ncdu
+## License
 
-# 现代化的磁盘使用分析工具
-brew install dust
-```
+MIT License - see [LICENSE](LICENSE) file for details
 
-## 故障排除
+## Acknowledgments
 
-### 监控未启动
-
-检查进程：
-```bash
-ps aux | grep monitor.sh
-```
-
-### 日志文件不存在
-
-确保已启动监控：
-```bash
-ls -lh ~/.disk_monitor_logs/
-```
-
-### 权限不足
-
-实时监控需要 sudo 权限：
-```bash
-sudo ./realtime.sh
-```
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 开源协议
-
-MIT License
-
-## 作者
-
-您的名字
+- Built with [rumps](https://github.com/jaredks/rumps) for menu bar app
+- Uses native macOS tools (df, fs_usage, ps, etc.)
 
 ---
 
-**提示**：如果发现微信、Xcode 等应用占用大量空间，建议：
-- 清理微信缓存（设置 → 通用 → 储存空间）
-- 删除 Xcode 模拟器：`xcrun simctl delete unavailable`
-- 清理 Homebrew 缓存：`brew cleanup`
+**Tip**: If you find WeChat, Xcode, etc. consuming lots of space:
+- Clean WeChat: Settings → General → Storage
+- Delete Xcode simulators: `xcrun simctl delete unavailable`
+- Clean Homebrew: `brew cleanup`
