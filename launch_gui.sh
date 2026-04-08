@@ -11,6 +11,6 @@ fi
 
 # 启动应用
 cd ~/disk-space-monitor
-python3 statusbar_app.py &
+python3 statusbar_app_zh.py &
 
 echo "✅ 应用已启动！查看状态栏右上角 💾 图标"
